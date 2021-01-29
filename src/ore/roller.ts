@@ -54,6 +54,9 @@ export class ORERoller extends Roller<Dice, Faces, DicePool> {
                 rolls: rolls
                     .sort((r1, r2) => r1.face - r2.face)
                     .map((roll) => {
+                        if (combinedRolls.looseDice.includes(roll.face)) {
+                            roll.die = Dice.D10_LOOSE
+                        }
                         return new DieRollView(roll, dieRollImages)
                     }),
                 rollIndex(): number {

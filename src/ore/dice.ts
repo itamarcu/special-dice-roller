@@ -4,6 +4,7 @@ import htmlString = JQuery.htmlString;
 
 export enum Dice {
     D10,
+    D10_LOOSE,
 }
 
 export type Faces = 10 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
@@ -45,6 +46,18 @@ diceImages.set(8, 'd10_8');
 diceImages.set(9, 'd10_9');
 diceImages.set(10, 'd10_10');
 dieRollImages.set(Dice.D10, diceImages);
+const diceImagesLoose = new Map<Faces, string>();
+diceImagesLoose.set(1, 'd10_loose_1');
+diceImagesLoose.set(2, 'd10_loose_2');
+diceImagesLoose.set(3, 'd10_loose_3');
+diceImagesLoose.set(4, 'd10_loose_4');
+diceImagesLoose.set(5, 'd10_loose_5');
+diceImagesLoose.set(6, 'd10_loose_6');
+diceImagesLoose.set(7, 'd10_loose_7');
+diceImagesLoose.set(8, 'd10_loose_8');
+diceImagesLoose.set(9, 'd10_loose_9');
+diceImagesLoose.set(10, 'd10_loose_10');
+dieRollImages.set(Dice.D10_LOOSE, diceImagesLoose);
 
 export function parseRollValues(roll: Roll<Dice, Faces>): RollValues {
     return new RollValues([roll.face], {}, [])
