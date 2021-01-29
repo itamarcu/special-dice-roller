@@ -4,19 +4,17 @@ import {DicePool, dicePoolMonoid} from './dice';
 export class SimpleParser extends DefaultSimpleParser<DicePool> {
     constructor() {
         super(
-            'hm',
+            'd',
             letterToRolls,
             dicePoolMonoid,
-            ['hero', 'monster'],
+            ['d10'],
         );
     }
 }
 
 function letterToRolls(letter: string, occurrences: number): DicePool {
-    if (letter === 'h') {
-        return new DicePool(occurrences, 0);
-    } else if (letter === 'm') {
-        return new DicePool(0, occurrences);
+    if (letter === 'd') {
+        return new DicePool(occurrences);
     } else {
         throw new Error(`Unknown letter ${letter}`);
     }

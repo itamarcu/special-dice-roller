@@ -1,8 +1,7 @@
 const tpl = `
 <ul>
 {{#results}}
-    <li>Monster Damage: {{monsterDamage}}</li>
-    <li>Hero Damage: {{heroDamage}}</li>
+    <li>Sets: {{setsReadable}}</li>
 {{/results}}
 </ul>
 `;

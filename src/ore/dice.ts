@@ -2,129 +2,93 @@ import {IMonoid} from '../lang';
 import {Roll} from '../roller';
 
 export enum Dice {
-    MONSTER,
-    HERO,
+    D10,
 }
 
-export enum Faces {
-    HERO_SKULL,
-    HERO_LION_SHIELD,
-    HERO_SKULL_SHIELD,
-    MONSTER_SKULL,
-    MONSTER_LION_SHIELD,
-    MONSTER_SKULL_SHIELD,
-}
+export type Faces = 10 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
-export const MONSTER_TABLE: Faces[] = [
-    Faces.MONSTER_SKULL,
-    Faces.MONSTER_SKULL,
-    Faces.MONSTER_SKULL,
-    Faces.MONSTER_LION_SHIELD,
-    Faces.MONSTER_LION_SHIELD,
-    Faces.MONSTER_SKULL_SHIELD,
-];
-
-export const HERO_TABLE: Faces[] = [
-    Faces.HERO_SKULL,
-    Faces.HERO_SKULL,
-    Faces.HERO_SKULL,
-    Faces.HERO_LION_SHIELD,
-    Faces.HERO_LION_SHIELD,
-    Faces.HERO_SKULL_SHIELD,
+export const D10_TABLE: Faces[] = [
+    10, 1, 2, 3, 4, 5, 6, 7, 8, 9
 ];
 
 export class DicePool {
     constructor(
-        public hero: number = 0,
-        public monster: number = 0,
+        public d: number,
     ) {
     }
 
     public toString(): string {
-        return `hero: ${this.hero}, monster: ${this.monster}`;
+        return `d10s: ${this.d}`;
     }
 }
 
 export class RollValues {
     constructor(
-        public heroSkulls: number = 0,
-        public heroLionShields: number = 0,
-        public heroSkullShields: number = 0,
-        public monsterSkulls: number = 0,
-        public monsterLionShields: number = 0,
-        public monsterSkullShields: number = 0,
+        public originalRoll: number[],  // e.g. [1, 7, 7, 3, 6, 3, 7, 7]
+        public sets: {[key: number] : number},  // e.g. {3: 2, 7: 4} = 2x3 and 4x7
+        public singles: {[key: number] : true},  // represents all the rest; up to 1 of each face.  e.g. {1: true, 6: true} = 1 and 6
     ) {
     }
 }
 
 const diceImages = new Map<Faces, string>();
-diceImages.set(Faces.HERO_SKULL, 'heroskull');
-diceImages.set(Faces.HERO_SKULL_SHIELD, 'heroskullshield');
-diceImages.set(Faces.HERO_LION_SHIELD, 'herolionshield');
-diceImages.set(Faces.MONSTER_SKULL, 'monsterskull');
-diceImages.set(Faces.MONSTER_SKULL_SHIELD, 'monsterskullshield');
-diceImages.set(Faces.MONSTER_LION_SHIELD, 'monsterlionshield');
+diceImages.set(1, 'd10_1');
+diceImages.set(2, 'd10_2');
+diceImages.set(3, 'd10_3');
+diceImages.set(4, 'd10_4');
+diceImages.set(5, 'd10_5');
+diceImages.set(6, 'd10_6');
+diceImages.set(7, 'd10_7');
+diceImages.set(8, 'd10_8');
+diceImages.set(9, 'd10_9');
+diceImages.set(10, 'd10_10');
 
 export const dieRollImages = new Map<Dice, Map<Faces, string>>();
-dieRollImages.set(Dice.HERO, diceImages);
-dieRollImages.set(Dice.MONSTER, diceImages);
-
-const rollToRollResultMapping = new Map<Faces, Partial<RollValues>>();
-rollToRollResultMapping.set(Faces.HERO_SKULL, {heroSkulls: 1});
-rollToRollResultMapping.set(Faces.HERO_SKULL_SHIELD, {heroSkullShields: 1});
-rollToRollResultMapping.set(Faces.HERO_LION_SHIELD, {heroLionShields: 1});
-rollToRollResultMapping.set(Faces.MONSTER_SKULL, {monsterSkulls: 1});
-rollToRollResultMapping.set(Faces.MONSTER_SKULL_SHIELD, {monsterSkullShields: 1});
-rollToRollResultMapping.set(Faces.MONSTER_LION_SHIELD, {monsterLionShields: 1});
+dieRollImages.set(Dice.D10, diceImages);
 
 export function parseRollValues(roll: Roll<Dice, Faces>): RollValues {
-    const result = rollToRollResultMapping.get(roll.face);
-    if (result !== undefined) {
-        return toRollResult(result);
-    } else {
-        throw new Error(`Unhandled Face ${roll.face}`);
+    return new RollValues([roll.face], {}, {})
+}
+
+export function parseFullRoll(fullRoll: number[]): RollValues {
+    const counts = new Array(11).fill(0)  // [0, 1, ..., 9, 10].  the 0 is not used
+    for (const k of fullRoll) {
+        counts[k] += 1
     }
+    const sets: {[key: number] : number} = {}
+    const singles: {[key: number] : true} = {}
+    for (const num of fullRoll.slice(1)) {
+        if (counts[num] === 0) continue
+        if (counts[num] === 1) singles[num] = true
+        if (counts[num] >= 2) sets[num] = counts[num]
+    }
+    return new RollValues(fullRoll, sets, singles)
 }
 
 export function toRollResult(partial: Partial<RollValues>): RollValues {
-    return Object.assign(new RollValues(), partial);
+    return Object.assign(new RollValues([], {}, {}), partial);
 }
 
 export class InterpretedResult {
     constructor(
-        public heroDamage: number = 0,
-        public monsterDamage: number = 0,
+        public setsReadable: string,  // e.g. "2×3   4×7" (width 2 height 3, etc)
     ) {
     }
 }
 
 export function interpretResult(result: RollValues): InterpretedResult {
-    const heroDamage = result.heroSkulls - result.monsterSkullShields;
-    const monsterDamage = result.monsterSkulls - result.heroLionShields;
-    const interpretedHeroDamage = heroDamage < 0 ? 0 : heroDamage;
-    const interpretedMonsterDamage = monsterDamage < 0 ? 0 : monsterDamage;
     return new InterpretedResult(
-        interpretedHeroDamage,
-        interpretedMonsterDamage,
+        Object.keys(result.sets).length === 0 ? '---' :
+        Object.entries(result.sets).map(pair => `${pair[1]}×${pair[0]}`).join('   '),
     );
 }
 
 export const rollValuesMonoid: IMonoid<RollValues> = {
-    identity: new RollValues(),
-    combine: (roll1: RollValues, roll2: RollValues) => new RollValues(
-        roll1.heroSkulls + roll2.heroSkulls,
-        roll1.heroLionShields + roll2.heroLionShields,
-        roll1.heroSkullShields + roll2.heroSkullShields,
-        roll1.monsterSkulls + roll2.monsterSkulls,
-        roll1.monsterLionShields + roll2.monsterLionShields,
-        roll1.monsterSkullShields + roll2.monsterSkullShields,
-    ),
+    identity: new RollValues([], {}, {}),
+    combine: (roll1: RollValues, roll2: RollValues) => parseFullRoll(roll1.originalRoll.concat(roll2.originalRoll)),
 };
 
 export const dicePoolMonoid: IMonoid<DicePool> = {
-    identity: new DicePool(),
-    combine: (roll1: DicePool, roll2: DicePool) => new DicePool(
-        roll1.hero + roll2.hero,
-        roll1.monster + roll2.monster,
-    ),
+    identity: new DicePool(0),
+    combine: (roll1: DicePool, roll2: DicePool) => new DicePool(roll1.d + roll2.d),
 };

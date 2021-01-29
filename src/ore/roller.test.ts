@@ -1,73 +1,36 @@
 import {makeRng} from '../rng';
-import {Dice, DicePool, Faces} from './dice';
+import {Dice, DicePool} from './dice';
 import {ORERoller} from './roller';
 
-test('should react to hq command', () => {
-    const roller = new ORERoller(makeRng(0), 'hq');
-    expect(roller.handlesCommand('/hq ')).toBe(true);
+test('should react to ore command', () => {
+    const roller = new ORERoller(makeRng(0), 'ore');
+    expect(roller.handlesCommand('/ore ')).toBe(true);
 });
 
-test('should roll a hero skull', () => {
+test('should roll 1d - [7]', () => {
+    const roller = new ORERoller(makeRng(7), '');
+    const result = roller.roll(new DicePool(1));
+
+    expect(result.length).toBe(1);
+    expect(result[0].die).toBe(Dice.D10);
+    expect(result[0].face).toBe(7);
+});
+
+test('should roll 1d - [10]', () => {
     const roller = new ORERoller(makeRng(0), '');
     const result = roller.roll(new DicePool(1));
 
     expect(result.length).toBe(1);
-    expect(result[0].die).toBe(Dice.HERO);
-    expect(result[0].face).toBe(Faces.HERO_SKULL);
+    expect(result[0].die).toBe(Dice.D10);
+    expect(result[0].face).toBe(10);
 });
 
-test('should roll a hero lion shield', () => {
-    const roller = new ORERoller(makeRng(4), '');
-    const result = roller.roll(new DicePool(1));
+test('should roll a [2, 3, 2]', () => {
+    const roller = new ORERoller(makeRng(2, 3, 2), '');
+    const result = roller.roll(new DicePool(3));
 
-    expect(result.length).toBe(1);
-    expect(result[0].die).toBe(Dice.HERO);
-    expect(result[0].face).toBe(Faces.HERO_LION_SHIELD);
-});
-
-test('should roll a hero skull shield', () => {
-    const roller = new ORERoller(makeRng(5), '');
-    const result = roller.roll(new DicePool(1));
-
-    expect(result.length).toBe(1);
-    expect(result[0].die).toBe(Dice.HERO);
-    expect(result[0].face).toBe(Faces.HERO_SKULL_SHIELD);
-});
-
-test('should roll a monster skull', () => {
-    const roller = new ORERoller(makeRng(0), '');
-    const result = roller.roll(new DicePool(0, 1));
-
-    expect(result.length).toBe(1);
-    expect(result[0].die).toBe(Dice.MONSTER);
-    expect(result[0].face).toBe(Faces.MONSTER_SKULL);
-});
-
-test('should roll a monster lion shield', () => {
-    const roller = new ORERoller(makeRng(4), '');
-    const result = roller.roll(new DicePool(0, 1));
-
-    expect(result.length).toBe(1);
-    expect(result[0].die).toBe(Dice.MONSTER);
-    expect(result[0].face).toBe(Faces.MONSTER_LION_SHIELD);
-});
-
-test('should roll a monster skull shield', () => {
-    const roller = new ORERoller(makeRng(5), '');
-    const result = roller.roll(new DicePool(0, 1));
-
-    expect(result.length).toBe(1);
-    expect(result[0].die).toBe(Dice.MONSTER);
-    expect(result[0].face).toBe(Faces.MONSTER_SKULL_SHIELD);
-});
-
-test('should roll a monster and hero skull shield', () => {
-    const roller = new ORERoller(makeRng(5, 5), '');
-    const result = roller.roll(new DicePool(1, 1));
-
-    expect(result.length).toBe(2);
-    expect(result[0].die).toBe(Dice.HERO);
-    expect(result[0].face).toBe(Faces.HERO_SKULL_SHIELD);
-    expect(result[1].die).toBe(Dice.MONSTER);
-    expect(result[1].face).toBe(Faces.MONSTER_SKULL_SHIELD);
+    expect(result.length).toBe(3);
+    expect(result[0].face).toBe(2);
+    expect(result[1].face).toBe(3);
+    expect(result[2].face).toBe(2);
 });

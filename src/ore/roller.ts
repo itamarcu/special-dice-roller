@@ -8,8 +8,9 @@ import {
     Dice,
     DicePool,
     dieRollImages,
-    Faces, HERO_TABLE,
-    interpretResult, MONSTER_TABLE,
+    Faces,
+    D10_TABLE,
+    interpretResult,
     parseRollValues,
     RollValues,
     rollValuesMonoid,
@@ -25,8 +26,7 @@ export class ORERoller extends Roller<Dice, Faces, DicePool> {
 
     public roll(pool: DicePool): Roll<Dice, Faces>[] {
         return [
-            ...rollDie(pool.hero, Dice.HERO, HERO_TABLE, this.rng),
-            ...rollDie(pool.monster, Dice.MONSTER, MONSTER_TABLE, this.rng),
+            ...rollDie(pool.d, Dice.D10, D10_TABLE, this.rng),
         ];
     }
 
@@ -36,8 +36,11 @@ export class ORERoller extends Roller<Dice, Faces, DicePool> {
         return combineAll(results, rollValuesMonoid);
     }
 
-    public toRoll(die: number, face: number): Roll<Dice, Faces> {
-        return new Roll(die, face);
+    public toRoll(die: number, faceIdx: number): Roll<Dice, Faces> {
+        // NOTICE:  I'm converting from an "enum index" (0 to 9) to a die face (1 to 10)
+        // 1 → 1, 2 → 2, ..., 9 → 9, 0 → 10
+        // (this is a bit more readable when doing RNG override in tests)
+        return new Roll(die, faceIdx === 0 ? 10 : faceIdx as Faces);
     }
 
     public formatRolls(rolls: Roll<Dice, Faces>[], flavorText?: string): string {
