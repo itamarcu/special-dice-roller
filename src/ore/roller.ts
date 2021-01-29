@@ -5,18 +5,17 @@ import {combineRolls, Roll, rollDie, Roller} from '../roller';
 import base from '../template';
 import {DieRollView} from '../view';
 import {
+    D10_TABLE,
     Dice,
     DicePool,
     dieRollImages,
     Faces,
-    D10_TABLE,
-    interpretResult,
+    interpretResultToHtml,
     parseRollValues,
     RollValues,
     rollValuesMonoid,
 } from './dice';
 import {SimpleParser} from './parser';
-import tpl from './template';
 
 export class ORERoller extends Roller<Dice, Faces, DicePool> {
 
@@ -52,13 +51,16 @@ export class ORERoller extends Roller<Dice, Faces, DicePool> {
                 canReRoll: this.canReRoll,
                 canKeep: this.canKeep,
                 flavorText,
-                rolls: rolls.map((roll) => new DieRollView(roll, dieRollImages)),
-                results: interpretResult(combinedRolls),
+                rolls: rolls
+                    .sort((r1, r2) => r1.face - r2.face)
+                    .map((roll) => {
+                        return new DieRollView(roll, dieRollImages)
+                    }),
                 rollIndex(): number {
                     return rolls.indexOf(this);
                 },
             },
-            {interpretation: tpl},
+            {interpretation: interpretResultToHtml(combinedRolls)},
         );
     }
 
