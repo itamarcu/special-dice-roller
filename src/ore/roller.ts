@@ -2,7 +2,6 @@ import * as Mustache from 'mustache';
 import {combineAll} from '../lang';
 import {RandomNumberGenerator} from '../rng';
 import {combineRolls, Roll, rollDie, Roller} from '../roller';
-import base from '../template';
 import {DieRollView} from '../view';
 import {
     D10_TABLE,
@@ -10,12 +9,12 @@ import {
     DicePool,
     dieRollImages,
     Faces,
-    interpretResultToHtml,
     parseRollValues,
     RollValues,
     rollValuesMonoid,
 } from './dice';
 import {SimpleParser} from './parser';
+import baseOverride from './template';
 
 export class ORERoller extends Roller<Dice, Faces, DicePool> {
 
@@ -45,25 +44,26 @@ export class ORERoller extends Roller<Dice, Faces, DicePool> {
     public formatRolls(rolls: Roll<Dice, Faces>[], flavorText?: string): string {
         const combinedRolls = combineRolls(rolls, parseRollValues, rollValuesMonoid);
         return Mustache.render(
-            base,
+            baseOverride,
             {
                 system: this.command,
                 canReRoll: this.canReRoll,
                 canKeep: this.canKeep,
                 flavorText,
                 rolls: rolls
-                    .sort((r1, r2) => r1.face - r2.face)
-                    .map((roll) => {
+                    .map(roll => {
                         if (combinedRolls.looseDice.includes(roll.face)) {
                             roll.die = Dice.D10_LOOSE
                         }
-                        return new DieRollView(roll, dieRollImages)
-                    }),
+                        return roll
+                    })
+                    .sort((r1, r2) => r1.face - r2.face)
+                    .sort((r1, r2) => r1.die - r2.die)
+                    .map(roll => new DieRollView(roll, dieRollImages)),
                 rollIndex(): number {
                     return rolls.indexOf(this);
                 },
             },
-            {interpretation: interpretResultToHtml(combinedRolls)},
         );
     }
 

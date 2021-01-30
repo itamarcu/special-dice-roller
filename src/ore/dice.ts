@@ -1,6 +1,5 @@
 import {IMonoid} from '../lang';
 import {Roll} from '../roller';
-import htmlString = JQuery.htmlString;
 
 export enum Dice {
     D10,
@@ -80,21 +79,6 @@ export function parseFullRoll(fullRoll: number[]): RollValues {
 
 export function toRollResult(partial: Partial<RollValues>): RollValues {
     return Object.assign(new RollValues([], {}, []), partial);
-}
-
-export function interpretResultToHtml(result: RollValues): htmlString {
-    const hasSets = Object.entries(result.sets).length >= 1
-    const hasLooseDice = result.looseDice.length >= 1
-    const setsLines = hasSets
-        ? Object.entries(result.sets).map(pair => `<li>Set!  <b>${pair[1]}×${pair[0]}</b></li>`).join('\n')
-        : `<li>No sets.</li>`
-    const looseDiceLine = hasLooseDice
-        ? `<li>Loose dice: ${result.looseDice.map(die => `${die}`).join(', ')}</li>`
-        : `` // empty text
-    return `<ul>
-${setsLines}
-${looseDiceLine}
-</ul>`;
 }
 
 export const rollValuesMonoid: IMonoid<RollValues> = {

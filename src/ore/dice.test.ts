@@ -1,31 +1,6 @@
 import {getDieImage} from '../images';
 import {Roll} from '../roller';
-import {Dice, dieRollImages, interpretResultToHtml, parseFullRoll, toRollResult} from './dice';
-
-test('no roll', () => {
-    const rollResult = toRollResult({});
-    const resultHtml = interpretResultToHtml(rollResult);
-
-    expect(resultHtml).toBe(`<ul>
-<li>No sets.</li>
-
-</ul>`);
-});
-
-test('should interpret results', () => {
-    const rollResult = toRollResult({
-        originalRoll: [1, 7, 7, 3, 6, 3, 7, 7],
-        sets: {3: 2, 7: 4},
-        looseDice: [1, 6]
-    });
-    const resultHtml = interpretResultToHtml(rollResult);
-
-    expect(resultHtml).toBe(`<ul>
-<li>Set!  <b>2×3</b></li>
-<li>Set!  <b>4×7</b></li>
-<li>Loose dice: 1, 6</li>
-</ul>`);
-});
+import {Dice, dieRollImages, parseFullRoll} from './dice';
 
 test('counts sets correctly', () => {
     const fullRoll = [6, 7, 10, 10, 6, 6]
