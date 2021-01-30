@@ -16,6 +16,10 @@ import {
 import {SimpleParser} from './parser';
 import baseOverride from './template';
 
+// foundry types
+// @ts-ignore
+declare var Hooks;
+
 export class ORERoller extends Roller<Dice, Faces, DicePool> {
 
     constructor(private rng: RandomNumberGenerator, command: string) {
@@ -43,6 +47,34 @@ export class ORERoller extends Roller<Dice, Faces, DicePool> {
 
     public formatRolls(rolls: Roll<Dice, Faces>[], flavorText?: string): string {
         const combinedRolls = combineRolls(rolls, parseRollValues, rollValuesMonoid);
+        /*
+         setRolls will be something like:
+         [
+            {rollsInSet: [DRV(2), DRV(2)]},
+            {rollsInSet: [DRV(7), DRV(7), DRV(7)]}
+         ]
+        */
+        const setRolls = Object.entries(combinedRolls.sets)
+                .map(s => [parseInt(s[0], 10), s[1]])
+                .sort((s1, s2) => s1[0] - s2[0])
+                .map(s => ({
+                        width: s[1],
+                        height: s[0],
+                        rollsInSet: new Array(s[1])
+                            .fill(new DieRollView(new Roll(Dice.D10, s[0] as Faces), dieRollImages))
+                    })
+                )
+        const looseDiceRolls = combinedRolls.looseDice
+                .map(ld => new DieRollView(new Roll(Dice.D10_LOOSE, ld as Faces), dieRollImages))
+
+        Hooks.once('renderChatMessage', (_: any, html: any, __: any) => {
+            html.find('.ore-sets').on('click', '.ore-set-roll', (event: Event) => {
+                event.preventDefault()
+                const setsDiv = event.currentTarget as HTMLDivElement;
+                setsDiv.style.outline = setsDiv.style.outline === 'dashed' ? 'none' : 'dashed'
+            })
+        })
+
         return Mustache.render(
             baseOverride,
             {
@@ -50,16 +82,8 @@ export class ORERoller extends Roller<Dice, Faces, DicePool> {
                 canReRoll: this.canReRoll,
                 canKeep: this.canKeep,
                 flavorText,
-                rolls: rolls
-                    .map(roll => {
-                        if (combinedRolls.looseDice.includes(roll.face)) {
-                            roll.die = Dice.D10_LOOSE
-                        }
-                        return roll
-                    })
-                    .sort((r1, r2) => r1.face - r2.face)
-                    .sort((r1, r2) => r1.die - r2.die)
-                    .map(roll => new DieRollView(roll, dieRollImages)),
+                setRolls,
+                looseDiceRolls,
                 rollIndex(): number {
                     return rolls.indexOf(this);
                 },

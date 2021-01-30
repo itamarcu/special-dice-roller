@@ -41,3 +41,23 @@
     color: #444;
     font-size: 85%;
 }
+
+/* One Roll Engine */
+
+.ore-sets {
+    display: contents;
+}
+
+.special-dice-roller .ore-set-roll {
+    display: inline-grid;
+}
+
+.special-dice-roller .ore-loose-dice {
+    display: inline-flex;
+}
+
+.special-dice-roller .ore-loose-dice input[type=checkbox] {
+    flex: 0 0 30px;
+    width: 30px
+}
+
